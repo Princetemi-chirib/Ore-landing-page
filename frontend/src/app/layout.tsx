@@ -6,37 +6,41 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   ),
   title: {
-    default: "Ọ̀rẹ́ — The Cognitive CRM",
+    default:
+      "Ọ̀rẹ́ — A Pal to Organize Your Mind and Protect Your Peace",
     template: "%s · Ọ̀rẹ́",
   },
   description:
-    "A high-utility second brain for founders and creatives: voice + context + an autonomous calendar that turns daily chaos into structured action.",
+    "Stop carrying your business alone. Ọ̀rẹ́ is a digital friend that listens to your thoughts and silently organizes your world. Clear the mental noise, find your focus, and wake up to a day already planned for you. Join the waitlist for a calmer, more organized way to live.",
   applicationName: "Ọ̀rẹ́",
   keywords: [
-    "cognitive crm",
-    "second brain",
+    "organize your mind",
+    "mental clarity",
     "voice journaling",
     "daily planning",
+    "second brain",
     "founders",
     "creatives",
-    "shadow calendar",
+    "peace of mind",
   ],
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
-    title: "Ọ̀rẹ́ — The Cognitive CRM",
+    title:
+      "Ọ̀rẹ́ — A Pal to Organize Your Mind and Protect Your Peace",
     description:
-      "Voice + context + calendar → structured action. Capture, decompress, verify, and wake up with a plan.",
+      "Stop carrying your business alone. Ọ̀rẹ́ is a digital friend that listens to your thoughts and silently organizes your world. Clear the mental noise, find your focus, and wake up to a day already planned for you. Join the waitlist for a calmer, more organized way to live.",
     siteName: "Ọ̀rẹ́",
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ọ̀rẹ́ — The Cognitive CRM",
+    title:
+      "Ọ̀rẹ́ — A Pal to Organize Your Mind and Protect Your Peace",
     description:
-      "Voice + context + calendar → structured action. Capture, decompress, verify, and wake up with a plan.",
+      "Stop carrying your business alone. Ọ̀rẹ́ is a digital friend that listens to your thoughts and silently organizes your world. Clear the mental noise, find your focus, and wake up to a day already planned for you. Join the waitlist for a calmer, more organized way to live.",
   },
   robots: {
     index: true,
