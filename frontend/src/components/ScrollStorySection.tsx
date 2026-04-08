@@ -7,7 +7,7 @@ import {
   useReducedMotion,
   useScroll,
 } from "framer-motion";
-import React, { memo, useMemo, useRef, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 
 type Step = {
   eyebrow: string;
@@ -57,7 +57,73 @@ function toneColor(tone: Step["tone"]) {
 
 export function ScrollStorySection() {
   const reduced = useReducedMotion() ?? false;
-  const ref = useRef<HTMLDivElement | null>(null);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  return (
+    <section className="relative mt-20 w-full">
+      {isDesktop ? (
+        <ScrollStoryDesktop reduced={reduced} />
+      ) : (
+        <ScrollStoryMobile reduced={reduced} />
+      )}
+    </section>
+  );
+}
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = () => setMatches(mql.matches);
+    onChange();
+    mql.addEventListener?.("change", onChange);
+    return () => mql.removeEventListener?.("change", onChange);
+  }, [query]);
+
+  return matches;
+}
+
+function ScrollStoryMobile({ reduced }: { reduced: boolean }) {
+  const accent = useMemo(() => toneColor(steps[0].tone), []);
+  const mobileReduced = true; // keep mobile smooth: static bg + mock animations
+
+  return (
+    <div>
+      <div className="relative overflow-hidden bg-black">
+        <StageBackground accent={accent} reduced={mobileReduced} />
+        <div className="relative mx-auto max-w-6xl px-6 py-12">
+          <CenteredIntro />
+
+          <div className="mt-10">
+            <div className="text-xs font-semibold tracking-wide text-white/65">
+              Scroll walkthrough
+            </div>
+            <h3 className="mt-3 text-balance text-3xl font-extrabold tracking-tight text-(--cream)">
+              The nightly handover, step by step
+            </h3>
+            <p className="mt-3 max-w-xl text-pretty text-sm leading-6 text-white/75">
+              Capture → decompress → verify → schedule. Scroll to see how the
+              thread, voice space, and shadow calendar work together.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-10">
+            {steps.map((s, i) => (
+              <div key={s.eyebrow} className="grid gap-5">
+                <StoryCopy step={s} idx={i + 1} reduced={true} />
+                <StoryMock stepIdx={i} reduced={mobileReduced || reduced} />
+                <div className="h-px w-full bg-linear-to-r from-white/0 via-white/12 to-white/0" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScrollStoryDesktop({ reduced }: { reduced: boolean }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const { scrollYProgress } = useScroll({
     target: scrollerRef,
@@ -81,125 +147,85 @@ export function ScrollStorySection() {
   );
 
   return (
-    <section ref={ref} className="relative mt-20 w-full">
-      {/* Mobile: normal scrolling (text up, mock down) */}
-      <div className="md:hidden">
-        <div className="relative overflow-hidden bg-black">
+    <div>
+      <div ref={scrollerRef} className="relative" style={{ height: `${slideCount * 100}vh` }}>
+        <div className="sticky top-0 h-svh overflow-hidden bg-black">
           <StageBackground accent={accent} reduced={reduced} />
-          <div className="relative mx-auto max-w-6xl px-6 py-12">
-            <CenteredIntro />
 
-            <div className="mt-10">
-              <div className="text-xs font-semibold tracking-wide text-white/65">
-                Scroll walkthrough
-              </div>
-              <h3 className="mt-3 text-balance text-3xl font-extrabold tracking-tight text-(--cream)">
-                The nightly handover, step by step
-              </h3>
-              <p className="mt-3 max-w-xl text-pretty text-sm leading-6 text-white/75">
-                Capture → decompress → verify → schedule. Scroll to see how the
-                thread, voice space, and shadow calendar work together.
-              </p>
-            </div>
+          <div className="relative mx-auto flex h-full max-w-6xl flex-col px-6 py-10 md:px-10 md:py-12">
+            <AnimatePresence mode="wait">
+              {isIntro ? (
+                <motion.div
+                  key="intro"
+                  initial={reduced ? { opacity: 1 } : { opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduced ? { opacity: 0 } : { opacity: 0, y: -10 }}
+                  transition={{ duration: 0.45, ease: "easeOut" }}
+                  className="flex flex-1 items-center justify-center"
+                >
+                  <CenteredIntro />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="slides"
+                  initial={reduced ? { opacity: 1 } : { opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduced ? { opacity: 0 } : { opacity: 0, y: -10 }}
+                  transition={{ duration: 0.45, ease: "easeOut" }}
+                  className="flex-1"
+                >
+                  <div className="mt-2 grid h-full items-center gap-12 md:grid-cols-12">
+                    <div className="md:col-span-6">
+                      <div className="text-xs font-semibold tracking-wide text-white/65">
+                        Scroll walkthrough
+                      </div>
+                      <h3 className="mt-3 text-balance text-3xl font-extrabold tracking-tight text-(--cream) md:text-4xl">
+                        The nightly handover, step by step
+                      </h3>
+                      <p className="mt-3 max-w-xl text-pretty text-sm leading-6 text-white/75">
+                        Capture → decompress → verify → schedule. Scroll to see how the
+                        thread, voice space, and shadow calendar work together.
+                      </p>
 
-            <div className="mt-10 grid gap-10">
-              {steps.map((s, i) => (
-                <div key={s.eyebrow} className="grid gap-5">
-                  <StoryCopy step={s} idx={i + 1} reduced={true} />
-                  <StoryMock stepIdx={i} reduced={reduced} />
-                  <div className="h-px w-full bg-linear-to-r from-white/0 via-white/12 to-white/0" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Desktop: pinned slideshow */}
-      <div className="hidden md:block">
-        <div
-          ref={scrollerRef}
-          className="relative"
-          style={{ height: `${slideCount * 100}vh` }}
-        >
-          <div className="sticky top-0 h-svh overflow-hidden bg-black">
-            <StageBackground accent={accent} reduced={reduced} />
-
-            <div className="relative mx-auto flex h-full max-w-6xl flex-col px-6 py-10 md:px-10 md:py-12">
-              <AnimatePresence mode="wait">
-                {isIntro ? (
-                  <motion.div
-                    key="intro"
-                    initial={reduced ? { opacity: 1 } : { opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduced ? { opacity: 0 } : { opacity: 0, y: -10 }}
-                    transition={{ duration: 0.45, ease: "easeOut" }}
-                    className="flex flex-1 items-center justify-center"
-                  >
-                    <CenteredIntro />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="slides"
-                    initial={reduced ? { opacity: 1 } : { opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduced ? { opacity: 0 } : { opacity: 0, y: -10 }}
-                    transition={{ duration: 0.45, ease: "easeOut" }}
-                    className="flex-1"
-                  >
-                    <div className="mt-2 grid h-full items-center gap-12 md:grid-cols-12">
-                      <div className="md:col-span-6">
-                        <div className="text-xs font-semibold tracking-wide text-white/65">
-                          Scroll walkthrough
-                        </div>
-                        <h3 className="mt-3 text-balance text-3xl font-extrabold tracking-tight text-(--cream) md:text-4xl">
-                          The nightly handover, step by step
-                        </h3>
-                        <p className="mt-3 max-w-xl text-pretty text-sm leading-6 text-white/75">
-                          Capture → decompress → verify → schedule. Scroll to see how the
-                          thread, voice space, and shadow calendar work together.
-                        </p>
-
-                        <div className="mt-8">
-                          <StepCounter idx={activeIdx - 1} total={steps.length} />
-                        </div>
-
-                        <div className="mt-8">
-                          <AnimatePresence mode="wait">
-                            {activeStep ? (
-                              <StoryCopy
-                                key={activeStep.eyebrow}
-                                step={activeStep}
-                                idx={activeIdx}
-                                reduced={reduced}
-                              />
-                            ) : null}
-                          </AnimatePresence>
-                        </div>
+                      <div className="mt-8">
+                        <StepCounter idx={activeIdx - 1} total={steps.length} />
                       </div>
 
-                      <div className="md:col-span-6">
-                        <div className="mx-auto w-full max-w-xl">
-                          <AnimatePresence mode="wait">
-                            {activeStep ? (
-                              <StoryMock
-                                key={activeStep.eyebrow}
-                                stepIdx={activeIdx - 1}
-                                reduced={reduced}
-                              />
-                            ) : null}
-                          </AnimatePresence>
-                        </div>
+                      <div className="mt-8">
+                        <AnimatePresence mode="wait">
+                          {activeStep ? (
+                            <StoryCopy
+                              key={activeStep.eyebrow}
+                              step={activeStep}
+                              idx={activeIdx}
+                              reduced={reduced}
+                            />
+                          ) : null}
+                        </AnimatePresence>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+
+                    <div className="md:col-span-6">
+                      <div className="mx-auto w-full max-w-xl">
+                        <AnimatePresence mode="wait">
+                          {activeStep ? (
+                            <StoryMock
+                              key={activeStep.eyebrow}
+                              stepIdx={activeIdx - 1}
+                              reduced={reduced}
+                            />
+                          ) : null}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 

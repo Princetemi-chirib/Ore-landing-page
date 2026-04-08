@@ -81,7 +81,7 @@ export function FaqSection() {
   return (
     <section id="faqs" className="mt-20 scroll-mt-24">
       <div className="mx-auto max-w-6xl px-6 md:px-10">
-        <div className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-black/25 p-8 shadow-[0_30px_120px_rgba(0,0,0,0.55)] backdrop-blur md:p-10">
+        <div className="relative min-h-svh overflow-hidden rounded-[2.25rem] border border-white/10 bg-black/25 p-8 shadow-[0_30px_120px_rgba(0,0,0,0.55)] backdrop-blur md:min-h-0 md:p-10">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 -top-24 mx-auto h-64 w-[92%] max-w-6xl rounded-[999px] blur-3xl opacity-70"
@@ -91,7 +91,7 @@ export function FaqSection() {
             }}
           />
 
-          <div className="relative grid gap-10 md:grid-cols-12 md:items-start">
+          <div className="relative grid h-full gap-10 md:grid-cols-12 md:items-start">
             <div className="md:col-span-4">
               <div className="text-xs font-semibold tracking-wide text-white/65">
                 FAQs
@@ -106,7 +106,7 @@ export function FaqSection() {
             </div>
 
             <div className="md:col-span-8">
-              <div className="grid gap-3">
+              <div className="grid gap-3 md:max-h-none md:overflow-visible max-h-[calc(100svh-18rem)] overflow-auto pr-1">
                 {rows.map((f, idx) => {
                   const isOpen = idx === openIdx;
                   const t = toneAccent(f.tone);
