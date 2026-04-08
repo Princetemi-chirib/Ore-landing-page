@@ -161,9 +161,49 @@ export function WaitlistWizard() {
     return false;
   }, [status.state, step, textValue, multiGoals.length]);
 
+  async function submit(payload: Answers) {
+    setStatus({ state: "submitting" });
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json()) as { ok: boolean; error?: string };
+      if (!res.ok || !data.ok) {
+        setStatus({
+          state: "error",
+          message: data.error ?? "Something went wrong. Please try again.",
+        });
+        return;
+      }
+      setStatus({ state: "done" });
+    } catch {
+      setStatus({ state: "error", message: "Network error. Please try again." });
+    }
+  }
+
   function setChoice(value: string) {
-    setAnswers((a) => ({ ...a, [step.key]: value }));
     setStatus({ state: "idle" });
+
+    // If the final step is consent, submit from here (choice-steps don't use OK).
+    const isLast = stepIdx === total - 1;
+    if (isLast && step.key === "consent") {
+      if (value !== "I accept") {
+        setStatus({
+          state: "error",
+          message: "Please accept to receive an invite when we go live.",
+        });
+        return;
+      }
+
+      const payload: Answers = { ...answers, consent: value, goals: multiGoals };
+      setAnswers(payload);
+      void submit(payload);
+      return;
+    }
+
+    setAnswers((a) => ({ ...a, [step.key]: value }));
     setStepIdx((s) => Math.min(total - 1, s + 1));
     setTextValue("");
   }
@@ -192,41 +232,22 @@ export function WaitlistWizard() {
       return;
     }
 
-    // Submit
-    setStatus({ state: "submitting" });
-    try {
-      const payload: Answers =
-        step.type === "multi"
-          ? { ...answers, goals: multiGoals }
-          : step.type === "choice"
-            ? answers
-            : { ...answers, [step.key]: v };
+    const payload: Answers =
+      step.type === "multi"
+        ? { ...answers, goals: multiGoals }
+        : step.type === "choice"
+          ? answers
+          : { ...answers, [step.key]: v };
 
-      if (payload.consent !== "I accept") {
-        setStatus({
-          state: "error",
-          message: "Please accept to receive an invite when we go live.",
-        });
-        return;
-      }
-
-      const res = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+    if (payload.consent !== "I accept") {
+      setStatus({
+        state: "error",
+        message: "Please accept to receive an invite when we go live.",
       });
-      const data = (await res.json()) as { ok: boolean; error?: string };
-      if (!res.ok || !data.ok) {
-        setStatus({
-          state: "error",
-          message: data.error ?? "Something went wrong. Please try again.",
-        });
-        return;
-      }
-      setStatus({ state: "done" });
-    } catch {
-      setStatus({ state: "error", message: "Network error. Please try again." });
+      return;
     }
+
+    await submit(payload);
   }
 
   function onBack() {
